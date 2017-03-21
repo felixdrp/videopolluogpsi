@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Video survey</title>
+  </head>
+  <body style="background-color:#f2f2f2">
+    <div id='root'>
+    </div>
+    <br>
+    <div style="text-align:center">
+      <div>
+        <button onclick="customize('videoPath')">Video Path</button>
+        <span id="videoPath"></span>
+      </div>
+      <br>
+      <div>
+        <button onclick="customize('outputPath')">Output file Path</button>
+        <span id="outputPath"></span>
+      </div>
+      <br>
+      <div>
+        <span id="firstname">First Name </span>
+        <input type="text" onchange="setPatient('firstname', this.value)"/>
+      </div>
+      <br>
+      <div>
+        <span id="surename">Surename </span>
+        <input type="text" onchange="setPatient('surename', this.value)"/>
+      </div>
+      <br><br>
+      <br><br>
+      <button onclick="nextStep()">Continue</button>
+    </div>
+
+    <script>
+var electron = require('electron')
+const {remote, ipcRenderer} = electron
+// const {Menu, MenuItem} = remote
+//
+// const menu = new Menu()
+// menu.append(new MenuItem({label: 'MenuItem1', click() { console.log('item 1 clicked') }}))
+// // menu.popup(remote.getCurrentWindow())
+
+const main = remote.require('./main.js')
+var {videoPath, outputPath} = main
+
+var customize = (pathName) => {
+  if (pathName === 'videoPath') {
+    return ipcRenderer.send('set-video-path', 'hola')
+  }
+  // Set output path
+  ipcRenderer.send('set-output-path', 'hola')
+}
+var setPatient = (key, value) => ipcRenderer.send('set-patient', {key, value})
+var nextStep = () => ipcRenderer.send('goto', 'yield-patient-data')
+
+// Change video path
+ipcRenderer.on('changed-video-path', (event, arg) => {
+  document.getElementById('videoPath').textContent = arg
+})
+// Change output path
+ipcRenderer.on('changed-output-path', (event, arg) => {
+  document.getElementById('outputPath').textContent = arg
+})
+
+// Update Paths first time.
+document.getElementById('videoPath').textContent = videoPath
+document.getElementById('outputPath').textContent = outputPath
+      </script>
+
+  </body>
+  </html>

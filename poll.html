@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Video survey</title>
+    <style>
+    .execute-button-wrap {
+      height: 34px;
+      margin: 0 14px 0 28px;
+      position: relative;
+    }
+
+    .execute-button {
+      background: -webkit-linear-gradient(#fdfdfd, #d2d3d6);
+      background: linear-gradient(#fdfdfd, #d2d3d6);
+      border-radius: 17px;
+      border: 1px solid rgba(0,0,0,0.25);
+      box-shadow: 0 1px 0 #fff;
+      cursor: pointer;
+      fill: #444;
+      height: 34px;
+      margin: 0;
+      padding: 0;
+      width: 34px;
+    }
+
+    .execute-button svg {
+      pointer-events: none;
+    }
+
+    .execute-button:active {
+      background: -webkit-linear-gradient(#e6e6e6, #c0c0c0);
+      background: linear-gradient(#e6e6e6, #c0c0c0);
+      box-shadow:
+        0 1px 0 #fff,
+        inset 0 0 2px rgba(0, 0, 0, 0.3),
+        inset 0 0 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .execute-button:focus {
+      outline: 0;
+    }
+    </style>
+  </head>
+  <body style="background-color:#f2f2f2">
+    <div id='root'>
+    </div>
+
+    <div style="text-align:center">
+      <button onclick="playPause()">Play/Pause</button>
+      <button onclick="makeBig()">Big</button>
+      <button onclick="makeSmall()">Small</button>
+      <button onclick="makeNormal()">Normal</button>
+      <br><br>
+      <video id="video1" onclick="playPause()" width="560" style="">
+      	<source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg">
+    	    Your browser does not support HTML5 video.
+      </video>
+    </div>
+
+    <script>
+var electron = require('electron')
+const {remote, ipcRenderer} = electron
+
+// Change output path
+ipcRenderer.on('changed-video-source', (event, arg) => {
+  console.log(':)')
+  document.getElementById('video1').src = arg
+})
+ipcRenderer.send('get-video-source')
+var chagevideo = () => ipcRenderer.send('get-video-source')
+
+var myVideo = document.getElementById('video1');
+var timer;
+var counter = 0;
+
+var poll = () => {
+  myVideo.pause()
+  console.log('poll '+myVideo.currentTime )
+  // alert('poll '+myVideo.currentTime )
+}
+
+console.log(myVideo)
+// When video ends stop timer.
+myVideo.onended = (event) => {
+  clearTimeout(timer)
+  alert('lastPoll')
+  console.log('event')
+  console.log(event)
+  console.log('last time poll and...')
+  console.log('Ask lastest questions about the video')
+
+}
+
+function playPause() {
+  if (myVideo.paused) {
+  //        myVideo.currentTime = 2*counter;
+    myVideo.play();
+  }
+  //else
+  //  return
+
+  timer = setTimeout(()=> poll(), 2005);
+}
+
+function makeBig() {
+  myVideo.width = 560;
+}
+
+function makeSmall() {
+  myVideo.width = 320;
+}
+
+function makeNormal() {
+  myVideo.width = 420;
+}
+      </script>
+  </body>
+</html>
