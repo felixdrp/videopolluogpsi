@@ -40,6 +40,12 @@
       outline: 0;
     }
     </style>
+
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+  integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+  crossorigin="anonymous"></script>
+
   </head>
   <body style="background-color:#f2f2f2">
     <div id='root'>
@@ -52,10 +58,18 @@
       <button onclick="makeNormal()">Normal</button>
       <br><br>
       <video id="video1" onclick="playPause()" width="560" style="">
-      	<source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg">
+      	<!-- <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg"> -->
     	    Your browser does not support HTML5 video.
       </video>
+
+      <br/>
+      <form id="pollForm">
+        <input type="radio" name="gender" value="male"> Male<br>
+        <input type="radio" name="gender" value="female"> Female<br>
+        <input type="radio" name="gender" value="other"> Other<br>
+        <input type="submit">
+      </form>
     </div>
 
     <script>
@@ -64,19 +78,22 @@ const {remote, ipcRenderer} = electron
 
 // Change output path
 ipcRenderer.on('changed-video-source', (event, arg) => {
-  console.log(':)')
+  console.log(':) '+arg)
   document.getElementById('video1').src = arg
 })
 ipcRenderer.send('get-video-source')
-var chagevideo = () => ipcRenderer.send('get-video-source')
+
+var changevideo = () => ipcRenderer.send('get-video-source')
 
 var myVideo = document.getElementById('video1');
 var timer;
 var counter = 0;
 
+var lastPoll = false;
+
 var poll = () => {
   myVideo.pause()
-  console.log('poll '+myVideo.currentTime )
+  //console.log('poll '+myVideo.currentTime )
   // alert('poll '+myVideo.currentTime )
 }
 
@@ -84,24 +101,49 @@ console.log(myVideo)
 // When video ends stop timer.
 myVideo.onended = (event) => {
   clearTimeout(timer)
-  alert('lastPoll')
-  console.log('event')
-  console.log(event)
-  console.log('last time poll and...')
-  console.log('Ask lastest questions about the video')
-
+  //alert('lastPoll')
+  // console.log('event')
+  // console.log(event)
+  // console.log('last time poll and...')
+  // console.log('Ask lastest questions about the video')
+  lastPoll = true;
 }
 
 function playPause() {
+
   if (myVideo.paused) {
+
+    if ( lastPoll ){
+      ipcRenderer.send('get-video-source')
+      lastPoll = false;
+    }
+
   //        myVideo.currentTime = 2*counter;
     myVideo.play();
   }
+
+
   //else
   //  return
 
   timer = setTimeout(()=> poll(), 2005);
 }
+
+
+document.querySelector('#pollForm').onsubmit = function(e){
+
+  e.preventDefault();
+
+  var selection = document.querySelector('#pollForm input:checked').value
+
+  ipcRenderer.send('form-result', selection )
+
+  playPause();
+  //var setPatient = (key, value) => ipcRenderer.send('set-patient', {key, value})
+
+  //if(!valid) {
+  //}
+};
 
 function makeBig() {
   myVideo.width = 560;
