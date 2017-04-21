@@ -39,6 +39,10 @@
     .execute-button:focus {
       outline: 0;
     }
+
+    input[type="radio"]{
+        margin-top: 2px;
+    }
     </style>
 
     <script
@@ -65,9 +69,16 @@
 
       <br/>
       <form id="pollForm">
-        <input type="radio" name="gender" value="male"> Male<br>
-        <input type="radio" name="gender" value="female"> Female<br>
-        <input type="radio" name="gender" value="other"> Other<br>
+        <input type="radio" name="gender" value="Camera Movement"> Camera Movement<br>
+        <input type="radio" name="gender" value="Aggressive Talk"> Aggressive Talk<br>
+        <input type="radio" name="gender" value="Retreat"> Retreat<br>
+        <input type="radio" name="gender" value="Hostile Approach"> Hostile Approach<br>
+        <input type="radio" name="gender" value="Defense behavior/Deescalating"> Defense behavior/Deescalating<br>
+        <input type="radio" name="gender" value="Attack"> Attack<br>
+        <input type="radio" name="gender" value="Fight"> Fight<br>
+        <input type="radio" name="gender" value="Aggressive display"> Aggressive display<br>
+        <input type="radio" name="gender" value="Chase"> Chase<br>
+        <input type="radio" name="gender" value="Police intervention"> Police intervention<br>
         <input id="submitButton" type="submit">
       </form>
     </div>
@@ -79,6 +90,64 @@ const {remote, ipcRenderer} = electron
 // Change output path
 ipcRenderer.on('changed-video-source', (event, arg) => {
   console.log(':) '+arg)
+
+  if (!arg.includes("fight")){
+          while (document.getElementById('pollForm').firstChild) {
+          document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
+      }
+      var tags = [
+              "Camera Movement",
+              "Casual Walking",
+              "Hugging",
+              "Casual Talking",
+              "Saying Farewell",
+              "Joking Gestures",
+              "Group Splits",
+              "Car in Scene - no people"
+            ].map((e) => {var input = document.createElement("input");
+                      input.type = "radio";
+                      input.name = "answer";
+                      input.value = e;
+                      document.getElementById('pollForm').appendChild(input);
+                      var text = document.createElement("span");
+                      text.textContent = e;
+                      document.getElementById('pollForm').appendChild(text);
+                      document.getElementById('pollForm').appendChild(document.createElement("br"));
+                     })
+    var submitb = document.createElement("input");
+    submitb.type = "submit"
+    submitb.id = "submitButton"
+    document.getElementById('pollForm').appendChild(submitb);
+  } else {
+    while (document.getElementById('pollForm').firstChild) {
+    document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
+}
+        var tags = [
+                "Camera Movement",
+                "Aggressive Talk",
+                "Retreat",
+                "Hostile Approach",
+                "Defense behavior/Deescalating",
+                "Attack",
+                "Fight",
+                "Aggressive display",
+                "Chase",
+                "Police intervention"
+              ].map((e) => {var input = document.createElement("input");
+                        input.type = "radio";
+                        input.name = "answer";
+                        input.value = e;
+                        document.getElementById('pollForm').appendChild(input);
+                        var text = document.createElement("span");
+                        text.textContent = e;
+                        document.getElementById('pollForm').appendChild(text);
+                        document.getElementById('pollForm').appendChild(document.createElement("br"));
+                       })
+        var submitb = document.createElement("input");
+        submitb.type = "submit"
+        submitb.id = "submitButton"
+        document.getElementById('pollForm').appendChild(submitb);
+  }
   document.getElementById('video1').src = arg
 })
 ipcRenderer.send('get-video-source')
@@ -90,6 +159,9 @@ var timer;
 var counter = 0;
 
 var lastPoll = false;
+
+//console.log(myVideo)
+//document.querySelector('#submitButton')
 
 var poll = () => {
   myVideo.pause()
