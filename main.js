@@ -96,7 +96,10 @@ ipcMain.on('set-video-path', (event, arg) => {
   console.log(event)
   console.log(arg)
   console.log('prev' + videoPath)
-  newPath = dialog.showOpenDialog(mainWindow, {properties: ['openFile', 'openDirectory', 'multiSelections']})
+  newPath = dialog.showOpenDialog(
+    mainWindow,
+    {properties: ['openFile', 'openDirectory', 'multiSelections']}
+  )
   console.log('alter' + newPath)
   if (newPath) {
     videoPath = newPath;

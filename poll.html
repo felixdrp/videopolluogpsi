@@ -67,7 +67,9 @@ ipcRenderer.on('changed-video-source', (event, arg) => {
   console.log(':)')
   document.getElementById('video1').src = arg
 })
+
 ipcRenderer.send('get-video-source')
+
 var chagevideo = () => ipcRenderer.send('get-video-source')
 
 var myVideo = document.getElementById('video1');
