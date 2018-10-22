@@ -12,12 +12,10 @@
   "author": "Felixdrp",
   "license": "ISC",
   "devDependencies": {
-    "asar": "^0.13.0",
-    "electron": "^1.6.2",
-    "electron-packager": "^8.6.0",
-    "electron-prebuilt": "^1.4.13"
+    "asar": "^0.14.5",
+    "electron": "latest",
+    "electron-packager": "^12.2.0",
+    "electron-prebuilt": "latest"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {}
 }
