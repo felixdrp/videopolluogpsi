@@ -26,6 +26,15 @@ const {
 const path = require('path')
 const url = require('url')
 
+// var csvWriter = require('csv-write-stream')
+var fs = require('fs')
+// var writer = csvWriter()
+
+// writer.pipe(fs.createWriteStream('out.csv'))
+// writer.write({hello: "world", foo: "bar", baz: "taco"})
+
+
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
@@ -34,12 +43,22 @@ var videoPath = path.join(__dirname, 'video');
 var outputPath = path.join(__dirname, 'output.csv')
 var patient = {
   firstname: 'patient',
-  surename: Date.now()
+  surname: Date.now()
 };
+
+var data = {}
+
+var videoFiles;
+var videoPointer = -1;
+
 
 function createWindow () {
     // Create the browser window.
     mainWindow = new BrowserWindow({width: 800, height: 600})
+
+    videoFiles = fs.readdirSync(videoPath);
+    console.log(JSON.stringify(videoFiles))
+    videoPointer = -1;
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
@@ -76,8 +95,12 @@ app.on('ready', createWindow)
 app.on('window-all-closed', function () {
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
+
+    saveAndIncrement()
+
+    // writer.end();
     if (process.platform !== 'darwin') {
-	app.quit()
+	    app.quit()
     }
 })
 
@@ -102,7 +125,10 @@ ipcMain.on('set-video-path', (event, arg) => {
   )
   console.log('alter' + newPath)
   if (newPath) {
-    videoPath = newPath;
+    videoPath = newPath[0];
+    videoFiles = fs.readdirSync(videoPath);
+    console.log(JSON.stringify(videoFiles))
+    videoPointer = -1;
   }
   event.sender.send('changed-video-path', videoPath)
 })
@@ -115,13 +141,54 @@ ipcMain.on('set-output-path', (event, arg) => {
   }
   event.sender.send('changed-output-path', outputPath)
 })
+
 ipcMain.on('set-patient', (event, arg) => {
   const {key, value} = arg
   patient[key] = value
   console.log(patient)
 })
+
+
+function saveAndIncrement(){
+
+    if( !videoFiles[videoPointer] ){
+      console.log("out of bound videopointer: =probably last video is finished")
+      return;
+    }
+
+    var numberedData = ""
+        numberedData = numberedData + (patient["firstname"] ? patient["firstname"] : "no name") +","
+        numberedData = numberedData + (patient["surname"] ? patient["surname"] : "no surname") +","
+        numberedData = numberedData + videoFiles[videoPointer] +","
+
+    for ( var a = 0; a< data[videoFiles[videoPointer]].length; a++){
+      numberedData = numberedData + data[videoFiles[videoPointer]][a] +","
+    }
+
+    console.log("writting: "+numberedData)
+
+    fs.appendFileSync(outputPath, numberedData+"\n");
+
+}
+
 ipcMain.on('get-video-source', (event, arg) => {
-  event.sender.send('changed-video-source', '/home/rp/Videos/yoga/Star Wars V The Empire Strikes Back - For my ally is the Force  Force Theme Yodas Theme - YouTube.webm')
+  if ( videoPointer > -1){
+    saveAndIncrement()
+  }
+  videoPointer++
+  event.sender.send('changed-video-source', videoPath+"/"+videoFiles[videoPointer])
+})
+
+ipcMain.on('form-result', (event, arg) => {
+
+  if( !data[videoFiles[videoPointer]] ){
+      data[videoFiles[videoPointer]] = []
+  }
+
+  data[videoFiles[videoPointer]].push (arg)
+  console.log(data[videoFiles[videoPointer]])
+  // writer.write({patient : JSON.stringify(patient), data : ["ME", "LA", "COME"]})
+  //event.sender.send('changed-video-source', '/home/rp/Videos/yoga/Star Wars V The Empire Strikes Back - For my ally is the Force  Force Theme Yodas Theme - YouTube.webm')
 })
 
 
@@ -129,6 +196,9 @@ ipcMain.on('goto', (event, arg) => {
   console.log(arg)
   switch (arg) {
     case 'yield-patient-data':
+      // writer.pipe(fs.createWriteStream(outputPath)) //open the writer stream
+
+      data[videoFiles[videoPointer]] = [];
 
       mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'poll.html'),

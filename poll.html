@@ -39,7 +39,17 @@
     .execute-button:focus {
       outline: 0;
     }
+
+    input[type="radio"]{
+        margin-top: 2px;
+    }
     </style>
+
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+  integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+  crossorigin="anonymous"></script>
+
   </head>
   <body style="background-color:#f2f2f2">
     <div id='root'>
@@ -52,10 +62,25 @@
       <button onclick="makeNormal()">Normal</button>
       <br><br>
       <video id="video1" onclick="playPause()" width="560" style="">
-      	<source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg">
+      	<!-- <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg"> -->
     	    Your browser does not support HTML5 video.
       </video>
+
+      <br/>
+      <form id="pollForm">
+        <input type="radio" name="gender" value="Camera Movement"> Camera Movement<br>
+        <input type="radio" name="gender" value="Aggressive Talk"> Aggressive Talk<br>
+        <input type="radio" name="gender" value="Retreat"> Retreat<br>
+        <input type="radio" name="gender" value="Hostile Approach"> Hostile Approach<br>
+        <input type="radio" name="gender" value="Defense behavior/Deescalating"> Defense behavior/Deescalating<br>
+        <input type="radio" name="gender" value="Attack"> Attack<br>
+        <input type="radio" name="gender" value="Fight"> Fight<br>
+        <input type="radio" name="gender" value="Aggressive display"> Aggressive display<br>
+        <input type="radio" name="gender" value="Chase"> Chase<br>
+        <input type="radio" name="gender" value="Police intervention"> Police intervention<br>
+        <input id="submitButton" type="submit">
+      </form>
     </div>
 
     <script>
@@ -64,21 +89,85 @@ const {remote, ipcRenderer} = electron
 
 // Change output path
 ipcRenderer.on('changed-video-source', (event, arg) => {
-  console.log(':)')
+  console.log(':) '+arg)
+
+  if (!arg.includes("fight")){
+          while (document.getElementById('pollForm').firstChild) {
+          document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
+      }
+      var tags = [
+              "Camera Movement",
+              "Casual Walking",
+              "Hugging",
+              "Casual Talking",
+              "Saying Farewell",
+              "Joking Gestures",
+              "Group Splits",
+              "Car in Scene - no people"
+            ].map((e) => {var input = document.createElement("input");
+                      input.type = "radio";
+                      input.name = "answer";
+                      input.value = e;
+                      document.getElementById('pollForm').appendChild(input);
+                      var text = document.createElement("span");
+                      text.textContent = e;
+                      document.getElementById('pollForm').appendChild(text);
+                      document.getElementById('pollForm').appendChild(document.createElement("br"));
+                     })
+    var submitb = document.createElement("input");
+    submitb.type = "submit"
+    submitb.id = "submitButton"
+    document.getElementById('pollForm').appendChild(submitb);
+  } else {
+    while (document.getElementById('pollForm').firstChild) {
+    document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
+}
+        var tags = [
+                "Camera Movement",
+                "Aggressive Talk",
+                "Retreat",
+                "Hostile Approach",
+                "Defense behavior/Deescalating",
+                "Attack",
+                "Fight",
+                "Aggressive display",
+                "Chase",
+                "Police intervention"
+              ].map((e) => {var input = document.createElement("input");
+                        input.type = "radio";
+                        input.name = "answer";
+                        input.value = e;
+                        document.getElementById('pollForm').appendChild(input);
+                        var text = document.createElement("span");
+                        text.textContent = e;
+                        document.getElementById('pollForm').appendChild(text);
+                        document.getElementById('pollForm').appendChild(document.createElement("br"));
+                       })
+        var submitb = document.createElement("input");
+        submitb.type = "submit"
+        submitb.id = "submitButton"
+        document.getElementById('pollForm').appendChild(submitb);
+  }
   document.getElementById('video1').src = arg
 })
 
 ipcRenderer.send('get-video-source')
 
-var chagevideo = () => ipcRenderer.send('get-video-source')
+var changevideo = () => ipcRenderer.send('get-video-source')
 
 var myVideo = document.getElementById('video1');
 var timer;
 var counter = 0;
 
+var lastPoll = false;
+
+//console.log(myVideo)
+//document.querySelector('#submitButton')
+
 var poll = () => {
   myVideo.pause()
-  console.log('poll '+myVideo.currentTime )
+  document.querySelector('#submitButton').removeAttribute("disabled");
+  //console.log('poll '+myVideo.currentTime )
   // alert('poll '+myVideo.currentTime )
 }
 
@@ -86,24 +175,45 @@ console.log(myVideo)
 // When video ends stop timer.
 myVideo.onended = (event) => {
   clearTimeout(timer)
-  alert('lastPoll')
-  console.log('event')
-  console.log(event)
-  console.log('last time poll and...')
-  console.log('Ask lastest questions about the video')
-
+  lastPoll = true;
+  document.querySelector('#submitButton').removeAttribute("disabled");
 }
 
 function playPause() {
+
   if (myVideo.paused) {
-  //        myVideo.currentTime = 2*counter;
+
+    if ( lastPoll ){
+      ipcRenderer.send('get-video-source')
+      lastPoll = false;
+    }
+
     myVideo.play();
   }
-  //else
-  //  return
+
 
   timer = setTimeout(()=> poll(), 2005);
 }
+
+
+document.querySelector('#pollForm').onsubmit = function(e){
+
+  e.preventDefault();
+
+  var selection = document.querySelector('#pollForm input:checked').value
+
+  ipcRenderer.send('form-result', selection )
+
+  document.querySelector('#submitButton').setAttribute("disabled", "true");
+
+  playPause();
+
+
+  //var setPatient = (key, value) => ipcRenderer.send('set-patient', {key, value})
+
+  //if(!valid) {
+  //}
+};
 
 function makeBig() {
   myVideo.width = 560;

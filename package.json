@@ -15,7 +15,11 @@
     "asar": "^0.14.5",
     "electron": "latest",
     "electron-packager": "^12.2.0",
-    "electron-prebuilt": "latest"
+    "electron-prebuilt": "latest",
+    "electron-prebuilt-compile": "^3.0.2",
+    "spectron": "^4.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "csv-write-stream": "^2.0.0"
+  }
 }
