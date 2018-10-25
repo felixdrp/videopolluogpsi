@@ -2,230 +2,51 @@
 <html>
   <head>
     <title>Video survey</title>
-    <style>
-    .execute-button-wrap {
-      height: 34px;
-      margin: 0 14px 0 28px;
-      position: relative;
-    }
-
-    .execute-button {
-      background: -webkit-linear-gradient(#fdfdfd, #d2d3d6);
-      background: linear-gradient(#fdfdfd, #d2d3d6);
-      border-radius: 17px;
-      border: 1px solid rgba(0,0,0,0.25);
-      box-shadow: 0 1px 0 #fff;
-      cursor: pointer;
-      fill: #444;
-      height: 34px;
-      margin: 0;
-      padding: 0;
-      width: 34px;
-    }
-
-    .execute-button svg {
-      pointer-events: none;
-    }
-
-    .execute-button:active {
-      background: -webkit-linear-gradient(#e6e6e6, #c0c0c0);
-      background: linear-gradient(#e6e6e6, #c0c0c0);
-      box-shadow:
-        0 1px 0 #fff,
-        inset 0 0 2px rgba(0, 0, 0, 0.3),
-        inset 0 0 6px rgba(0, 0, 0, 0.2);
-    }
-
-    .execute-button:focus {
-      outline: 0;
-    }
-
-    input[type="radio"]{
-        margin-top: 2px;
-    }
-    </style>
-
-    <script
-  src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-  integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
-  crossorigin="anonymous"></script>
-
+     <link rel="stylesheet" type="text/css" href="style/poll.css">
   </head>
   <body style="background-color:#f2f2f2">
-    <div id='root'>
-    </div>
-
-    <div style="text-align:center">
-      <button onclick="playPause()">Play/Pause</button>
-      <button onclick="makeBig()">Big</button>
-      <button onclick="makeSmall()">Small</button>
-      <button onclick="makeNormal()">Normal</button>
-      <br><br>
-      <video id="video1" onclick="playPause()" width="560" style="">
-      	<!-- <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-    	  <source src="https://www.w3schools.com/html/mov_bbb.ogg" type="video/ogg"> -->
-    	    Your browser does not support HTML5 video.
-      </video>
-
-      <br/>
-      <form id="pollForm">
-        <input type="radio" name="gender" value="Camera Movement"> Camera Movement<br>
-        <input type="radio" name="gender" value="Aggressive Talk"> Aggressive Talk<br>
-        <input type="radio" name="gender" value="Retreat"> Retreat<br>
-        <input type="radio" name="gender" value="Hostile Approach"> Hostile Approach<br>
-        <input type="radio" name="gender" value="Defense behavior/Deescalating"> Defense behavior/Deescalating<br>
-        <input type="radio" name="gender" value="Attack"> Attack<br>
-        <input type="radio" name="gender" value="Fight"> Fight<br>
-        <input type="radio" name="gender" value="Aggressive display"> Aggressive display<br>
-        <input type="radio" name="gender" value="Chase"> Chase<br>
-        <input type="radio" name="gender" value="Police intervention"> Police intervention<br>
-        <input id="submitButton" type="submit">
-      </form>
-    </div>
-
+    <div id='root'>Loading videos... ⏳</div>
     <script>
-var electron = require('electron')
-const {remote, ipcRenderer} = electron
+const React = require('react');
+const ReactDOM = require('react-dom');
+const {
+  remote,
+  ipcRenderer
+} = require('electron')
+require('@babel/register');
+const Poll = require('./components/Poll');
+const {
+  POLLING_TIME_INTERVAL,
+  FAREWELL_TEXT,
+} = require('./config')
 
 // Change output path
-ipcRenderer.on('changed-video-source', (event, arg) => {
-  console.log(':) '+arg)
+ipcRenderer.on('changed-video-source', (event, video) => {
+  console.log(':) ' + video)
 
-  if (!arg.includes("fight")){
-          while (document.getElementById('pollForm').firstChild) {
-          document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
-      }
-      var tags = [
-              "Camera Movement",
-              "Casual Walking",
-              "Hugging",
-              "Casual Talking",
-              "Saying Farewell",
-              "Joking Gestures",
-              "Group Splits",
-              "Car in Scene - no people"
-            ].map((e) => {var input = document.createElement("input");
-                      input.type = "radio";
-                      input.name = "answer";
-                      input.value = e;
-                      document.getElementById('pollForm').appendChild(input);
-                      var text = document.createElement("span");
-                      text.textContent = e;
-                      document.getElementById('pollForm').appendChild(text);
-                      document.getElementById('pollForm').appendChild(document.createElement("br"));
-                     })
-    var submitb = document.createElement("input");
-    submitb.type = "submit"
-    submitb.id = "submitButton"
-    document.getElementById('pollForm').appendChild(submitb);
-  } else {
-    while (document.getElementById('pollForm').firstChild) {
-    document.getElementById('pollForm').removeChild(document.getElementById('pollForm').firstChild);
-}
-        var tags = [
-                "Camera Movement",
-                "Aggressive Talk",
-                "Retreat",
-                "Hostile Approach",
-                "Defense behavior/Deescalating",
-                "Attack",
-                "Fight",
-                "Aggressive display",
-                "Chase",
-                "Police intervention"
-              ].map((e) => {var input = document.createElement("input");
-                        input.type = "radio";
-                        input.name = "answer";
-                        input.value = e;
-                        document.getElementById('pollForm').appendChild(input);
-                        var text = document.createElement("span");
-                        text.textContent = e;
-                        document.getElementById('pollForm').appendChild(text);
-                        document.getElementById('pollForm').appendChild(document.createElement("br"));
-                       })
-        var submitb = document.createElement("input");
-        submitb.type = "submit"
-        submitb.id = "submitButton"
-        document.getElementById('pollForm').appendChild(submitb);
+  if (video === null) {
+    ReactDOM.render(
+      FAREWELL_TEXT,
+      document.getElementById('root')
+    );
+    return
   }
-  document.getElementById('video1').src = arg
+
+  ReactDOM.render(
+    React.createElement(
+      Poll,
+      {
+        pollingTimeInterval: POLLING_TIME_INTERVAL,
+        videoSrc: video,
+        nextVideo: () => ipcRenderer.send('get-video-source'),
+        submitForm: (result) => ipcRenderer.send('form-result', result),
+      }
+    ),
+    document.getElementById('root')
+  );
 })
 
 ipcRenderer.send('get-video-source')
-
-var changevideo = () => ipcRenderer.send('get-video-source')
-
-var myVideo = document.getElementById('video1');
-var timer;
-var counter = 0;
-
-var lastPoll = false;
-
-//console.log(myVideo)
-//document.querySelector('#submitButton')
-
-var poll = () => {
-  myVideo.pause()
-  document.querySelector('#submitButton').removeAttribute("disabled");
-  //console.log('poll '+myVideo.currentTime )
-  // alert('poll '+myVideo.currentTime )
-}
-
-console.log(myVideo)
-// When video ends stop timer.
-myVideo.onended = (event) => {
-  clearTimeout(timer)
-  lastPoll = true;
-  document.querySelector('#submitButton').removeAttribute("disabled");
-}
-
-function playPause() {
-
-  if (myVideo.paused) {
-
-    if ( lastPoll ){
-      ipcRenderer.send('get-video-source')
-      lastPoll = false;
-    }
-
-    myVideo.play();
-  }
-
-
-  timer = setTimeout(()=> poll(), 2005);
-}
-
-
-document.querySelector('#pollForm').onsubmit = function(e){
-
-  e.preventDefault();
-
-  var selection = document.querySelector('#pollForm input:checked').value
-
-  ipcRenderer.send('form-result', selection )
-
-  document.querySelector('#submitButton').setAttribute("disabled", "true");
-
-  playPause();
-
-
-  //var setPatient = (key, value) => ipcRenderer.send('set-patient', {key, value})
-
-  //if(!valid) {
-  //}
-};
-
-function makeBig() {
-  myVideo.width = 560;
-}
-
-function makeSmall() {
-  myVideo.width = 320;
-}
-
-function makeNormal() {
-  myVideo.width = 420;
-}
-      </script>
+    </script>
   </body>
 </html>

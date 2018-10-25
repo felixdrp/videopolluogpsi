@@ -1,15 +1,4 @@
-/*
-const electron = require('electron');
-const {app, BrowserWindow} = electron;
-
-app.on('ready', ()=> {
-    let win = new BrowserWindow({with: 800, height:600});
-//    win.loadURL('google.com')
-    win.loadURL(`file://${__dirname}/index.html`);
-    win.webContents.openDevTools();
-
-});
- */
+require('@babel/register');
 const electron = require('electron')
 // app Module to control application life.
 // BrowserWindow Module to create native browser window.
@@ -33,8 +22,6 @@ var fs = require('fs')
 // writer.pipe(fs.createWriteStream('out.csv'))
 // writer.write({hello: "world", foo: "bar", baz: "taco"})
 
-
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
@@ -50,7 +37,6 @@ var data = {}
 
 var videoFiles;
 var videoPointer = -1;
-
 
 function createWindow () {
     // Create the browser window.
@@ -148,41 +134,21 @@ ipcMain.on('set-patient', (event, arg) => {
   console.log(patient)
 })
 
-
-function saveAndIncrement(){
-
-    if( !videoFiles[videoPointer] ){
-      console.log("out of bound videopointer: =probably last video is finished")
-      return;
-    }
-
-    var numberedData = ""
-        numberedData = numberedData + (patient["firstname"] ? patient["firstname"] : "no name") +","
-        numberedData = numberedData + (patient["surname"] ? patient["surname"] : "no surname") +","
-        numberedData = numberedData + videoFiles[videoPointer] +","
-
-    for ( var a = 0; a< data[videoFiles[videoPointer]].length; a++){
-      numberedData = numberedData + data[videoFiles[videoPointer]][a] +","
-    }
-
-    console.log("writting: "+numberedData)
-
-    fs.appendFileSync(outputPath, numberedData+"\n");
-
-}
-
 ipcMain.on('get-video-source', (event, arg) => {
   if ( videoPointer > -1){
     saveAndIncrement()
   }
   videoPointer++
+  if (videoFiles[videoPointer] === undefined) {
+    event.sender.send('changed-video-source', null)
+    return
+  }
   event.sender.send('changed-video-source', videoPath+"/"+videoFiles[videoPointer])
 })
 
 ipcMain.on('form-result', (event, arg) => {
-
   if( !data[videoFiles[videoPointer]] ){
-      data[videoFiles[videoPointer]] = []
+    data[videoFiles[videoPointer]] = []
   }
 
   data[videoFiles[videoPointer]].push (arg)
@@ -190,7 +156,6 @@ ipcMain.on('form-result', (event, arg) => {
   // writer.write({patient : JSON.stringify(patient), data : ["ME", "LA", "COME"]})
   //event.sender.send('changed-video-source', '/home/rp/Videos/yoga/Star Wars V The Empire Strikes Back - For my ally is the Force  Force Theme Yodas Theme - YouTube.webm')
 })
-
 
 ipcMain.on('goto', (event, arg) => {
   console.log(arg)
@@ -220,6 +185,26 @@ ipcMain.on('goto', (event, arg) => {
 })
 exports.videoPath = videoPath
 exports.outputPath = outputPath
+
+function saveAndIncrement(){
+  if( !videoFiles[videoPointer] ){
+    console.log("out of bound videopointer: =probably last video is finished")
+    return;
+  }
+
+  var numberedData = ""
+  numberedData = numberedData + (patient["firstname"] ? patient["firstname"] : "no name") +","
+  numberedData = numberedData + (patient["surname"] ? patient["surname"] : "no surname") +","
+  numberedData = numberedData + videoFiles[videoPointer] +","
+
+  for ( var a = 0; a< data[videoFiles[videoPointer]].length; a++){
+    numberedData = numberedData + data[videoFiles[videoPointer]][a] +","
+  }
+
+  console.log("writting: "+numberedData)
+
+  fs.appendFileSync(outputPath, numberedData+"\n");
+}
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
