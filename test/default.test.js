@@ -102,11 +102,16 @@ async function test() {
     // Awaiting poll submit?
     if (videoPaused && formStatus) {
       // Fill form and submit
-      pollList = await driver.findElements(By.name('poll'))
-      submit = await driver.findElement(By.id('submitButton'))
+      try {
+        pollList = await driver.findElements(By.name('poll'))
+        submit = await driver.findElement(By.id('submitButton'))
 
-      pollList[Math.floor(Math.random() * pollList.length)].click()
-      submit.click()
+        pollList[Math.floor(Math.random() * pollList.length)].click()
+        submit.click()
+      }  catch (error) {
+        console.log(error)
+      }
+
       // debugger
     }
 

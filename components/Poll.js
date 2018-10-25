@@ -82,6 +82,12 @@ module.exports = class Poll extends React.Component {
     const radioList = e.target.firstElementChild.children
     const radioChecked = Array.from(radioList)
       .filter(radio => radio.firstElementChild.checked)[0]
+
+    // No value selected
+    if (radioChecked === undefined) {
+      return
+    }
+
     const value = radioChecked.firstElementChild.value
 
     this.props.submitForm(`"${value}@${this.videoStopRef.current.currentTime}"`)
