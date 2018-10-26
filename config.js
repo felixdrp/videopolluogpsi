@@ -23,6 +23,6 @@ module.exports = {
     'Chase',
     'Police intervention'
   ],
-  FAREWELL_TEXT: 'Thank you for your colaboration',
+  FAREWELL_TEXT: 'Thank you for your collaboration',
 
 }

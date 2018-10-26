@@ -7,6 +7,10 @@
   z-index: 1;
 }
 
+#submitButton {
+  margin-top: 10px;
+}
+
 .execute-button-wrap {
   height: 34px;
   margin: 0 14px 0 28px;
